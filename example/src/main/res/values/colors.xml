@@ -12,7 +12,7 @@
     <color name="blue">#00C7EE</color>
     <color name="pinkRed">#EF0050</color>
     <color name="violet">#7B20A2</color>
-    <color name="translucent">#DD000000</color>
+    <color name="translucent">#7E000000</color>
     <color name="text_color">#999999</color>
 
     <color name="transparent">#00000000</color>

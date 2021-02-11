@@ -15,7 +15,7 @@
             android:padding="10dp"
             android:src="@drawable/icon_x" />
 
-    <com.lzf.easyfloat.example.widget.RoundProgressBar
+    <com.hacknife.example.widget.RoundProgressBar
             android:id="@+id/roundProgressBar"
             android:layout_width="60dp"
             android:layout_height="60dp"
