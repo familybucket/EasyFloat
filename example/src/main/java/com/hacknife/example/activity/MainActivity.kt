@@ -197,22 +197,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
                             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
                         })
-
-//                // 解决 ListView 拖拽滑动冲突
-//                it.findViewById<ListView>(R.id.lv_test).apply {
-//                    adapter = MyAdapter(
-//                        this@MainActivity,
-//                        arrayOf("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "...")
-//                    )
-//
-//                    // 监听 ListView 的触摸事件，手指触摸时关闭拖拽，手指离开重新开启拖拽
-//                    setOnTouchListener { _, event ->
-//                        logger.e("listView: ${event.action}")
-//                        EasyFloat.appFloatDragEnable(event?.action == MotionEvent.ACTION_UP)
-//                        false
-//                    }
-//                }
-                })
+                }
+            )
             .show()
     }
 

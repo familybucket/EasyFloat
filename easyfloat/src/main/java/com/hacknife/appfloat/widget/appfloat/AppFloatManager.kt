@@ -7,6 +7,7 @@ import android.content.Context
 import android.graphics.PixelFormat
 import android.graphics.Rect
 import android.os.Build
+import android.util.Log
 import android.view.*
 import com.hacknife.appfloat.anim.AppFloatAnimatorManager
 import com.hacknife.appfloat.data.FloatConfig
@@ -42,33 +43,70 @@ internal class AppFloatManager(val context: Context, var config: FloatConfig) {
     }
 
     private fun initParams() {
-        windowManager = context.getSystemService(Service.WINDOW_SERVICE) as WindowManager
-        params = WindowManager.LayoutParams().apply {
-            // 安卓6.0 以后，全局的Window类别，必须使用TYPE_APPLICATION_OVERLAY
-            type =
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY else WindowManager.LayoutParams.TYPE_PHONE
-            format = PixelFormat.RGBA_8888
-            gravity = Gravity.START or Gravity.TOP
-            // 设置浮窗以外的触摸事件可以传递给后面的窗口、不自动获取焦点
-            if (config.touchEnable) {
-                flags =
-                    WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                Logger.v("支持触摸")
-            } else {
-                Logger.v("不支持触摸")
-                flags =
-                    WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+        windowManager =
+            context.applicationContext.getSystemService(Service.WINDOW_SERVICE) as WindowManager
+
+
+        val layoutParams = WindowManager.LayoutParams()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            layoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+            //刘海屏延伸到刘海里面
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                layoutParams.layoutInDisplayCutoutMode =
+                    WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
             }
-            width =
-                if (config.widthMatch) WindowManager.LayoutParams.MATCH_PARENT else WindowManager.LayoutParams.WRAP_CONTENT
-            height =
-                if (config.heightMatch) WindowManager.LayoutParams.MATCH_PARENT else WindowManager.LayoutParams.WRAP_CONTENT
-            // 如若设置了固定坐标，直接定位
-            if (config.locationPair != Pair(0, 0)) {
-                x = config.locationPair.first
-                y = config.locationPair.second
-            }
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT
+            && Build.VERSION.SDK_INT < Build.VERSION_CODES.M
+        ) {
+            layoutParams.type = WindowManager.LayoutParams.TYPE_TOAST
+        } else {
+            layoutParams.type = WindowManager.LayoutParams.TYPE_PHONE
         }
+
+        layoutParams.packageName = context.packageName
+
+        layoutParams.flags =
+            layoutParams.flags or WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
+
+
+        //Focus会占用屏幕焦点，导致游戏无声
+        Logger.v("touchEnable:${config.touchEnable}")
+        if (config.touchEnable) {
+            layoutParams.flags =
+                layoutParams.flags or (WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                        WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL)
+        } else {
+            layoutParams.flags =
+                layoutParams.flags or (WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                        or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+        }
+
+        if (config.widthMatch or config.heightMatch) {
+            layoutParams.flags = layoutParams.flags or (WindowManager.LayoutParams.FLAG_FULLSCREEN
+                    or WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR
+                    or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN)
+            layoutParams.width =
+                if (config.widthMatch) WindowManager.LayoutParams.MATCH_PARENT else WindowManager.LayoutParams.WRAP_CONTENT
+            layoutParams.height =
+                if (config.heightMatch) WindowManager.LayoutParams.MATCH_PARENT else WindowManager.LayoutParams.WRAP_CONTENT
+        } else {
+            layoutParams.flags =
+                layoutParams.flags or (WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR
+                        or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN)
+            layoutParams.width = WindowManager.LayoutParams.WRAP_CONTENT
+            layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT
+        }
+
+        layoutParams.format = PixelFormat.TRANSPARENT
+
+        if (config.locationPair != Pair(0, 0)) {
+            layoutParams.x = config.locationPair.first
+            layoutParams.y = config.locationPair.second
+        }
+        layoutParams.gravity = Gravity.START or Gravity.TOP
+
+        params = layoutParams
+
     }
 
     /**
@@ -200,6 +238,7 @@ internal class AppFloatManager(val context: Context, var config: FloatConfig) {
         val animator: Animator? = manager?.enterAnim()
         if (animator != null) {
             // 可以延伸到屏幕外，动画结束需要去除该属性，不然旋转屏幕可能置于屏幕外部
+            val paramsFlags = params.flags
             params.flags =
                 WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
             animator.addListener(object : Animator.AnimatorListener {
@@ -208,8 +247,7 @@ internal class AppFloatManager(val context: Context, var config: FloatConfig) {
                 override fun onAnimationEnd(animation: Animator?) {
                     config.isAnim = false
                     // 不需要延伸到屏幕外了，防止屏幕旋转的时候，浮窗处于屏幕外
-                    params.flags =
-                        WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                    params.flags = paramsFlags
                 }
 
                 override fun onAnimationCancel(animation: Animator?) {}
