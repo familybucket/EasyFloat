@@ -23,7 +23,7 @@ publish{
     userOrg = 'hacknife'
     groupId = 'com.hacknife'
     artifactId = 'appfloat'
-    publishVersion = '1.0.2'
+    publishVersion = '1.0.3'
     desc = 'Android 悬浮窗'
     website = 'https://github.com/hacknife/appfloat'
 }

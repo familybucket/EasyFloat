@@ -82,17 +82,17 @@ internal class AppFloatManager(val context: Context, var config: FloatConfig) {
         }
 
         if (config.widthMatch or config.heightMatch) {
-            layoutParams.flags = layoutParams.flags or (WindowManager.LayoutParams.FLAG_FULLSCREEN
-                    or WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR
-                    or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN)
+//            layoutParams.flags = layoutParams.flags or (WindowManager.LayoutParams.FLAG_FULLSCREEN
+//                    or WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR
+//                    or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN)
             layoutParams.width =
                 if (config.widthMatch) WindowManager.LayoutParams.MATCH_PARENT else WindowManager.LayoutParams.WRAP_CONTENT
             layoutParams.height =
                 if (config.heightMatch) WindowManager.LayoutParams.MATCH_PARENT else WindowManager.LayoutParams.WRAP_CONTENT
         } else {
-            layoutParams.flags =
-                layoutParams.flags or (WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR
-                        or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN)
+//            layoutParams.flags =
+//                layoutParams.flags or (WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR
+//                        or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN)
             layoutParams.width = WindowManager.LayoutParams.WRAP_CONTENT
             layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT
         }
